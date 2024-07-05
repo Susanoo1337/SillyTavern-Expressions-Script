@@ -160,22 +160,23 @@ class Script(scripts.Script):
         suffix_textboxes_values = args[28:]
 
         suffixes = suffix_lists['Standard Emotions (28 imgs)']
-        suffixes = [suffix for suffix, selected in zip(suffixes, suffix_checkboxes_values) if selected]
+        selected_suffixes = [(suffix.split('=')[0], text_value) for suffix, selected, text_value in zip(suffixes, suffix_checkboxes_values, suffix_textboxes_values) if selected]
+        if not selected_suffixes:
+            raise ValueError("No Emotions selected")
 
         p.do_not_save_grid = True
 
         job_count = 0
         jobs = []
 
-        for suffix, custom_suffix in zip(suffixes, suffix_textboxes_values):
-            name, _ = suffix.split('=')
+        for name, custom_suffix in selected_suffixes:
             new_prompt = p.prompt + " " + custom_suffix
             args = {"prompt": new_prompt, "name": name}
 
             job_count += args.get("n_iter", p.n_iter)
             jobs.append(args)
 
-        print(f"Will process {len(suffixes)} suffixes in {job_count} jobs.")
+        print(f"Will process {len(selected_suffixes)} suffixes in {job_count} jobs.")
         if p.seed == -1:
             p.seed = int(random.randrange(4294967294))
 
